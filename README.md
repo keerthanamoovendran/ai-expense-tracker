@@ -137,9 +137,6 @@ expense-tracker/
 
 ---
 
-Screenshots
-
-Add screenshots of the homepage, dashboard, and advice page here.
 
 
 
