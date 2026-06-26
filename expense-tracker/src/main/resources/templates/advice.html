@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Advice - Expense Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #0F1B1E;
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(184, 134, 11, 0.12), transparent 40%),
+                radial-gradient(circle at 85% 90%, rgba(184, 134, 11, 0.08), transparent 40%);
+            color: #F7F3EA;
+            min-height: 100vh;
+            padding: 32px 24px 80px;
+        }
+
+        .wrap {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 36px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #B8860B;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        h1 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 32px;
+            font-weight: 400;
+            color: #F7F3EA;
+        }
+
+        nav a {
+            color: #C9C2B0;
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 18px;
+            border-bottom: 1px solid transparent;
+        }
+
+        nav a:hover {
+            border-bottom-color: #B8860B;
+            color: #F7F3EA;
+        }
+
+        .panel {
+            background-color: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(184, 134, 11, 0.25);
+            border-radius: 10px;
+            padding: 36px;
+            backdrop-filter: blur(6px);
+        }
+
+        .panel-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #4ADE80;
+            box-shadow: 0 0 8px #4ADE80;
+        }
+
+        .panel-label span {
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #8A8275;
+            font-weight: 600;
+        }
+
+        #adviceContent {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #E8E3D6;
+        }
+
+        #adviceContent ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #adviceContent li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        #adviceContent li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #B8860B;
+            font-weight: 700;
+        }
+
+        #adviceContent strong {
+            color: #E8C468;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #8A8275;
+            font-size: 14px;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(184, 134, 11, 0.25);
+            border-top-color: #B8860B;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .refresh-btn {
+            display: inline-block;
+            margin-top: 28px;
+            padding: 12px 28px;
+            background-color: transparent;
+            border: 1px solid #B8860B;
+            color: #E8C468;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background-color: rgba(184, 134, 11, 0.15);
+        }
+
+        .refresh-btn:focus-visible {
+            outline: 2px solid #B8860B;
+            outline-offset: 3px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .spinner {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <div>
+                <span class="eyebrow">AI Insights</span>
+                <h1>Spending Advice</h1>
+            </div>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/dashboard">Dashboard</a>
+            </nav>
+        </header>
+
+        <div class="panel">
+            <div class="panel-label">
+                <div class="dot"></div>
+                <span>Gemini Analysis</span>
+            </div>
+            <div id="adviceContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Reading your expenses and thinking it through...</span>
+                </div>
+            </div>
+            <button class="refresh-btn" onclick="loadAdvice()">Refresh advice</button>
+        </div>
+    </div>
+
+    <script>
+        function formatAdvice(text) {
+            // Convert **bold** to <strong>
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Split into lines, turn lines starting with * or - into list items
+            const lines = text.split(/\n|(?=\*\s)/).map(l => l.trim()).filter(l => l.length > 0);
+
+            let html = '';
+            let inList = false;
+
+            lines.forEach(line => {
+                const isBullet = /^\*\s|^-\s/.test(line);
+                const cleanLine = line.replace(/^\*\s|^-\s/, '');
+
+                if (isBullet) {
+                    if (!inList) {
+                        html += '<ul>';
+                        inList = true;
+                    }
+                    html += `<li>${cleanLine}</li>`;
+                } else {
+                    if (inList) {
+                        html += '</ul>';
+                        inList = false;
+                    }
+                    html += `<p style="margin-bottom: 14px;">${cleanLine}</p>`;
+                }
+            });
+
+            if (inList) html += '</ul>';
+            return html;
+        }
+
+        async function loadAdvice() {
+            const contentDiv = document.getElementById('adviceContent');
+            contentDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Reading your expenses and thinking it through...</span>
+                </div>
+            `;
+
+            try {
+                const res = await fetch('/api/advice');
+                const text = await res.text();
+                contentDiv.innerHTML = formatAdvice(text);
+            } catch (err) {
+                contentDiv.innerHTML = `<p>Couldn't load advice right now. Make sure the server is running and try again.</p>`;
+            }
+        }
+
+        loadAdvice();
+    </script>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Expense Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #F7F3EA;
+            background-image: linear-gradient(rgba(27, 42, 47, 0.03) 1px, transparent 1px);
+            background-size: 100% 28px;
+            color: #1B2A2F;
+            min-height: 100vh;
+            padding: 32px 24px 80px;
+        }
+
+        .wrap {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 36px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #8A8275;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        h1 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 32px;
+            font-weight: 400;
+            color: #1B2A2F;
+        }
+
+        nav a {
+            color: #4A4A45;
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 18px;
+            border-bottom: 1px solid transparent;
+        }
+
+        nav a:hover {
+            border-bottom-color: #B8860B;
+            color: #1B2A2F;
+        }
+
+        .total-banner {
+            background-color: #1B2A2F;
+            color: #F7F3EA;
+            border-radius: 6px;
+            padding: 24px 28px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-banner .label {
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #C9C2B0;
+        }
+
+        .total-banner .amount {
+            font-family: Georgia, serif;
+            font-size: 30px;
+            color: #E8C468;
+        }
+
+        .panel {
+            background-color: #FFFFFF;
+            border: 1px solid #E5DFD0;
+            border-radius: 6px;
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+
+        .panel h2 {
+            font-family: Georgia, serif;
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 18px;
+            color: #1B2A2F;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        form .full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #8A8275;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #D8D1C0;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #1B2A2F;
+            background-color: #FBFAF6;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #B8860B;
+        }
+
+        .submit-row {
+            grid-column: 1 / -1;
+            margin-top: 6px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background-color: #1B2A2F;
+            color: #F7F3EA;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #B8860B;
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid #B8860B;
+            outline-offset: 3px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #8A8275;
+            padding: 10px 8px;
+            border-bottom: 2px solid #E5DFD0;
+        }
+
+        td {
+            padding: 14px 8px;
+            border-bottom: 1px solid #EFEAE0;
+            font-size: 14px;
+        }
+
+        td.amount-cell {
+            font-family: Georgia, serif;
+            font-weight: 600;
+            color: #1B2A2F;
+        }
+
+        .category-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            background-color: #F1ECE0;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #6B6456;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #A35C4E;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: underline;
+        }
+
+        .delete-btn:hover {
+            color: #7A3D32;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #A39E91;
+            font-size: 14px;
+        }
+
+        @media (max-width: 540px) {
+            form {
+                grid-template-columns: 1fr;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead {
+                display: none;
+            }
+            td {
+                padding: 6px 8px;
+            }
+            tr {
+                border-bottom: 1px solid #E5DFD0;
+                padding: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <div>
+                <span class="eyebrow">Personal Finance</span>
+                <h1>Dashboard</h1>
+            </div>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/advice">AI Advice</a>
+            </nav>
+        </header>
+
+        <div class="total-banner">
+            <span class="label">Total Spent</span>
+            <span class="amount" id="totalAmount">₹0.00</span>
+        </div>
+
+        <div class="panel">
+            <h2>Add an expense</h2>
+            <form id="expenseForm">
+                <div>
+                    <label for="title">Title</label>
+                    <input type="text" id="title" placeholder="e.g. Groceries" required>
+                </div>
+                <div>
+                    <label for="amount">Amount</label>
+                    <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" required>
+                </div>
+                <div>
+                    <label for="category">Category</label>
+                    <select id="category" required>
+                        <option value="">Select...</option>
+                        <option>Food</option>
+                        <option>Transport</option>
+                        <option>Shopping</option>
+                        <option>Bills</option>
+                        <option>Entertainment</option>
+                        <option>Health</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="date">Date</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="full">
+                    <label for="description">Description (optional)</label>
+                    <input type="text" id="description" placeholder="Any notes...">
+                </div>
+                <div class="submit-row">
+                    <button type="submit" class="btn">Add Expense</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>All expenses</h2>
+            <table id="expenseTable">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="expenseBody">
+                </tbody>
+            </table>
+            <div id="emptyState" class="empty-state" style="display:none;">
+                No expenses yet — add your first one above.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/expenses';
+
+        async function loadExpenses() {
+            const res = await fetch(API_URL);
+            const expenses = await res.json();
+            const tbody = document.getElementById('expenseBody');
+            const emptyState = document.getElementById('emptyState');
+            tbody.innerHTML = '';
+
+            if (expenses.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+
+            let total = 0;
+            expenses.forEach(exp => {
+                total += exp.amount;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${exp.title}</td>
+                    <td><span class="category-tag">${exp.category}</span></td>
+                    <td>${exp.date}</td>
+                    <td class="amount-cell">₹${exp.amount.toFixed(2)}</td>
+                    <td><button class="delete-btn" onclick="deleteExpense(${exp.id})">Delete</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('totalAmount').textContent = '₹' + total.toFixed(2);
+        }
+
+        async function deleteExpense(id) {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            loadExpenses();
+        }
+
+        document.getElementById('expenseForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const expense = {
+                title: document.getElementById('title').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                category: document.getElementById('category').value,
+                date: document.getElementById('date').value,
+                description: document.getElementById('description').value
+            };
+
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(expense)
+            });
+
+            this.reset();
+            loadExpenses();
+        });
+
+        loadExpenses();
+    </script>
+</body>
+</html>
